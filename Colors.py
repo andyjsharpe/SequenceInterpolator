@@ -1,0 +1,8 @@
+black = '#171717'
+navy = '#1f252e'
+grey = '#2f353d'
+lightGrey = '#595f69'
+white = '#cfcfcf'
+gold = '#ffcc00'
+orange = '#ffaa00'
+check = '#919191'
