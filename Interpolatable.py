@@ -1,4 +1,5 @@
 # This is for saving/loading stuff
+import copy
 import pickle
 
 
@@ -9,12 +10,13 @@ class Interpolatable:
     # Stores dict of all prompt pieces
     data = {}
     # Sorted dict of frames containing a dict data to change and their new values
-    transitions = {}
+    transitions = []
 
     def __init__(self, name: str, data: dict):
         self.name = name
         # Intended to be set to a dictionary with keys representing the object's initial state
         self.data = data
+        self.transitions = {0: {'On': True}}
 
     def save_data(self, file_folder: str):
         file_name = '{}/{}-data'.format(file_folder, self.name)
@@ -46,11 +48,31 @@ class Interpolatable:
         else:
             self.transitions[frame_number] = {key: value}
 
-    def apply_frame(self, frame_number: int):
+    def apply_frame(self, frame_number: int, dictionary: dict):
         if frame_number in self.transitions:
             for key, value in self.transitions[frame_number].items():
-                self.data[key] = value
+                dictionary[key] = value
 
     def apply_up_to_frame(self, frame_number):
-        for i in range(0, frame_number):
-            self.apply_frame(i)
+        dictionary = copy.deepcopy(self.data)
+        for i in range(0, frame_number + 1):
+            self.apply_frame(i, dictionary)
+        return dictionary
+
+    def get_on(self, frame_number):
+        on = True
+        for i in range(0, frame_number + 1):
+            if i in self.transitions and 'On' in self.transitions[i]:
+                on = self.transitions[i]['On']
+        return on
+
+    def get_key(self, frame_number):
+        if frame_number in self.transitions:
+            if 'On' in self.transitions[frame_number]:
+                if len(self.transitions[frame_number]) > 1 or self.transitions[frame_number]['On']:
+                    return True
+                else:
+                    return None
+            elif len(self.transitions[frame_number]) > 0:
+                return True
+        return False
