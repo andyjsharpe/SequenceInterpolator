@@ -12,7 +12,7 @@ class Interpolatable:
     # Stores dict of all prompt pieces
     data = {}
     # Sorted dict of frames containing a dict data to change and their new values
-    transitions = []
+    transitions = {}
 
     def __init__(self, name: str, data: dict):
         self.name = name
@@ -200,3 +200,9 @@ class Interpolatable:
             if frame in self.transitions and key in self.transitions[frame]:
                 return self.transitions[frame][key], frame
         return self.data[key], 0
+
+    def remove_key(self, key):
+        self.data.pop(key)
+        for values in self.transitions.values():
+            if key in values:
+                values.pop(key)

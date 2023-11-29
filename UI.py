@@ -14,7 +14,7 @@ selected_interpolatable = interpolatables[0]  # The Interpolatable object that i
 selected_frame = 0  # The frame that is selected
 lastFrame = 10  # The last frame in the timeline
 keyframeMultiplier = 1  # The number of renders/keyframe (static values)
-transitionMultiplier = 1  # The number of renders in-between keyframes (interlopating values)
+transitionMultiplier = 0  # The number of renders in-between keyframes (interlopating values)
 positive_format = '--prompt {}'
 negative_format = '--negative_prompt {}'
 
@@ -37,7 +37,7 @@ def add_key(variable, negative):
 
 
 def delete_key(key):
-    selected_interpolatable.data.pop(key)
+    selected_interpolatable.remove_key(key)
     # Reload UI
     mainApp.reload_all()
 
@@ -220,7 +220,7 @@ class Settings(tk.Frame):
                                   validate="key", validatecommand=(interp_mult_value, '%P'))
         interp_mult_entry.grid(row=3, column=1, sticky='nsew')
         tk.Button(self, text='Apply', command=lambda:apply_transition_multiplier(interp_mult_var)).grid(row=3, column=2, sticky='nsew')
-        tk.Label(self, text='Total Frames: {}'.format(lastFrame*keyframeMultiplier + (lastFrame-1)*transitionMultiplier)).grid(row=4, column=0, sticky='nsew')
+        tk.Label(self, text='Total Frames: {}'.format((lastFrame+1)*keyframeMultiplier + (lastFrame)*transitionMultiplier)).grid(row=4, column=0, sticky='nsew')
 
 
 def generate():
@@ -317,6 +317,7 @@ def apply_last_frame(var):
     try:
         lastFrame = int(var.get())
         mainApp.reload_all()
+        mainApp.reload_settings()
     except:
         pass
 
