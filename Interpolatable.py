@@ -20,8 +20,9 @@ class Interpolatable:
         self.data = data
         self.transitions = {0: {'On': True}}
 
-    def save_data(self):
-        location = asksaveasfilename(initialfile=self.name)
+    def save_data(self, initial_name):
+        self.name = initial_name
+        location = asksaveasfilename(initialfile=initial_name)
         try:
             file = open(location, 'wb')
             pickle.dump(self.data, file)
@@ -33,6 +34,9 @@ class Interpolatable:
         location = askopenfilename()
         try:
             file = open(location, 'rb')
+            name = file.name
+            start = name.rfind('/')
+            self.name = name[start+1:]
             self.data = pickle.load(file)
             file.close()
         except:
