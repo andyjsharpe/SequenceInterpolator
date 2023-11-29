@@ -7,3 +7,6 @@ from Colors import white
 from Colors import gold
 from Colors import orange
 from Colors import check
+from Colors import blue
+from Colors import lightBlue
+from Colors import add_colors_and_adjust_brightness
