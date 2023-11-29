@@ -67,14 +67,14 @@ class ValueInspector(tk.Frame):
         tk.Button(self.frame, text='Save as', command=lambda:save_interpolatable(name_var)).grid(row=0, column=1, sticky='nsew')
         tk.Button(self.frame, text='Load', command=lambda:load_interpolatable()).grid(row=0, column=2, sticky='nsew')
         # New Key Name
-        key_var = tk.StringVar(value="Key Name")
+        key_var = tk.StringVar(value="Category Name")
         key_entry = tk.Entry(self.frame, width=int(len(key_var.get())*1.5), background=white, foreground=black, textvariable=key_var)
         key_entry.grid(row=1, column=0, sticky='nsew')
         # Negative button
         negative = tk.BooleanVar(value=False)
         tk.Checkbutton(self.frame, text='Negative?', variable=negative).grid(row=1, column=1, sticky='nsew')
         # New Button
-        tk.Button(self.frame, text='Add key', command=lambda: add_key(key_var, negative)).grid(row=1, column=2, sticky='nsew')
+        tk.Button(self.frame, text='Add Category', command=lambda: add_key(key_var, negative)).grid(row=1, column=2, sticky='nsew')
         item_frame = Scrollable(self.frame, 400, 400)
         item_frame.grid(row=2, column=0, sticky="nsew", columnspan=3)
         # Key Value Stuff
@@ -548,4 +548,5 @@ def create_ui():
     global mainApp
     mainApp = MainApplication(root, bg=black)
     mainApp.pack(side="top", fill="both", expand=True)
+    root.eval('tk::PlaceWindow . center')
     root.mainloop()
