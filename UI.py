@@ -538,12 +538,31 @@ def get_time_color(interp, frame, use_selected, selected_color, key_color, on_co
 
 class Scrollable(tk.Frame):
     def __init__(self, parent: tk.Frame, *args, **kw):
-        tk.Frame.__init__(self, parent, *args, **kw)
+        tk.Frame.__init__(self, parent, bg=black, *args, **kw)
 
         self.parent = parent
 
         #self.width = width
         #self.height = height
+
+        style = ttk.Style()
+        style.theme_use('default')
+        style.map("Horizontal.TScrollbar",
+                  background=[("disabled", navy), ('active',grey)],
+                  arrowcolor=[("disabled", lightGrey), ('active',white)],
+                  troughcolor=[("disabled", lightGrey), ('active',lightGrey)],
+                  foreground =[("disabled", grey), ('active',grey)])
+
+        style.configure("Horizontal.TScrollbar", background=navy, arrowcolor=lightGrey, troughcolor=lightGrey, foreground=grey)
+
+        style.map("Vertical.TScrollbar",
+                  background=[("disabled", navy), ('active', grey)],
+                  arrowcolor=[("disabled", lightGrey), ('active', white)],
+                  troughcolor=[("disabled", lightGrey), ('active', lightGrey)],
+                  foreground=[("disabled", grey), ('active', grey)])
+
+        style.configure("Vertical.TScrollbar", background=navy, arrowcolor=lightGrey, troughcolor=lightGrey,
+                        foreground=grey)
 
         vscrollbar = ttk.Scrollbar(self, orient='vertical')
         vscrollbar.grid(row=0, column=1, sticky="ns")
