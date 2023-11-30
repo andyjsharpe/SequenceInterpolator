@@ -2,7 +2,7 @@ from UI import create_ui
 
 
 def main():
-    print("Started Script")
+    print("Started UI")
     create_ui()
 
 
