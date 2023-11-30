@@ -65,7 +65,7 @@ class ValueInspector(tk.Frame):
         frames_entry = tk.Entry(self.frame, width=int(len(selected_interpolatable.name)*1.1), background=white, foreground=black, textvariable=name_var)
         frames_entry.grid(row=0, column=0, sticky='nsew')
         # Save/Load
-        tk.Button(self.frame, text='Save as', command=lambda:save_interpolatable(name_var)).grid(row=0, column=2, sticky='nsew')
+        tk.Button(self.frame, text='Save As', command=lambda:save_interpolatable(name_var)).grid(row=0, column=2, sticky='nsew')
         tk.Button(self.frame, text='Load', command=lambda:load_interpolatable()).grid(row=0, column=3, sticky='nsew')
         # New Key Name
         key_var = tk.StringVar(value="Category Name")
@@ -152,7 +152,7 @@ class KeyframeInspector(tk.Frame):
         # Name
         tk.Label(self.frame, text='{}: Frame {}'.format(selected_interpolatable.name, selected_frame)).grid(row=0, column=0, sticky='nsew')
         # Save/Load
-        tk.Button(self.frame, text='Save as', command=lambda:save_transition()).grid(row=0, column=1, sticky='nsew')
+        tk.Button(self.frame, text='Save As', command=lambda:save_transition()).grid(row=0, column=1, sticky='nsew')
         tk.Button(self.frame, text='Load to Frame', command=lambda:load_transition()).grid(row=0, column=2, sticky='nsew')
         # On Button
         use_button(self.frame, selected_interpolatable, selected_frame).grid(row=1, column=0, sticky='nsew')
@@ -165,7 +165,7 @@ class KeyframeInspector(tk.Frame):
         tk.Button(self.frame, text='Apply All', command=lambda: apply_all_transitions(self.items)).grid(row=1, column=2,
                                                                                                    sticky='nsew')
         # Apply to subject
-        tk.Button(self.frame, text='Apply To Subject', command=lambda: apply_all_transitions_to_subject(self.items)).grid(row=1, column=3,
+        tk.Button(self.frame, text='Apply to Subject', command=lambda: apply_all_transitions_to_subject(self.items)).grid(row=1, column=3,
                                                                                                         sticky='nsew')
         # Reset
         tk.Button(self.frame, text='Reset',
@@ -219,7 +219,7 @@ class use_button(tk.Checkbutton):
     def __init__(self, parent, interp, frame, *args, **kwargs):
         is_on = interp.get_on(frame)
         checked = tk.BooleanVar(value=is_on)
-        tk.Checkbutton.__init__(self, parent, text='Use interpolatable?', variable=checked,
+        tk.Checkbutton.__init__(self, parent, text='Use Subject?', variable=checked,
                                 command=lambda: turn_frame_off(interp, frame, checked.get()), *args, **kwargs)
 
 
