@@ -233,6 +233,26 @@ class Settings(tk.Frame):
         interp_mult_entry.grid(row=3, column=1, sticky='nsew')
         tk.Button(self, text='Apply', command=lambda:apply_transition_multiplier(interp_mult_var)).grid(row=3, column=2, sticky='nsew')
         tk.Label(self, text='Total Frames: {}'.format((lastFrame+1)*keyframeMultiplier + (lastFrame)*transitionMultiplier)).grid(row=4, column=0, sticky='nsew')
+        tk.Button(self, text='Reset', command=lambda: reset_all()).grid(row=4,column=1,sticky='nsew', columnspan=2)
+
+def reset_all():
+    global interpolatables
+    global lastFrame
+    global keyframeMultiplier
+    global transitionMultiplier
+    global selected_interpolatable
+    global selected_frame
+    subject = Interpolatable("Subject", {'Example category': 'Example Value'})
+    cam = Interpolatable("Camera", {'size': '', 'view': ''})
+    enviro = Interpolatable("Environment", {'Location': ''})
+    interpolatables = [subject, cam, enviro]  # Array of Interpolatable objects being used
+    selected_interpolatable = interpolatables[0]  # The Interpolatable object that is selected
+    selected_frame = 0  # The frame that is selected
+    lastFrame = 10  # The last frame in the timeline
+    keyframeMultiplier = 1  # The number of renders/keyframe (static values)
+    transitionMultiplier = 0  # The number of renders in-between keyframes (interlopating values)
+    mainApp.reload_all()
+    mainApp.reload_settings()
 
 
 def generate():
@@ -320,6 +340,7 @@ def load_sequence():
         keyframeMultiplier = sequence[2]
         transitionMultiplier = sequence[3]
         mainApp.reload_all()
+        mainApp.reload_settings()
     except:
         pass
 
