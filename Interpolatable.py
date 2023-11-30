@@ -144,10 +144,10 @@ class Interpolatable:
                 positives.append(value)
         positive_prompt = None
         if len(positives) > 0:
-            positive_prompt = ', '.join(positives)
+            positive_prompt = '(' + ', '.join(positives) + ')'
         negative_prompt = None
         if len(negatives) > 0:
-            negative_prompt = ', '.join(negatives)
+            negative_prompt = '(' + ', '.join(negatives) + ')'
         return positive_prompt, negative_prompt
 
     # Use if between transition point or not on a keyframe
@@ -178,10 +178,10 @@ class Interpolatable:
                 positives.append(value)
         positive_prompt = None
         if len(positives) > 0:
-            positive_prompt = ', '.join(positives)
+            positive_prompt = '(' + ', '.join(positives) + ')'
         negative_prompt = None
         if len(negatives) > 0:
-            negative_prompt = ', '.join(negatives)
+            negative_prompt = '(' + ', '.join(negatives) + ')'
         return positive_prompt, negative_prompt
 
 
@@ -191,7 +191,7 @@ class Interpolatable:
     def mix_values(self, value1, value2, completion):
         rounded = round(completion*100)/100
         inverse_rounded = round((1-completion) * 100) / 100
-        return '{{{}:{} | {}:{}}}'.format(value1, inverse_rounded, value2, rounded)
+        return '{{({}:{}) | ({}:{})}}'.format(value1, inverse_rounded, value2, rounded)
 
     def get_next_transition(self, frame_number: int, last_frame: int, key):
         for frame in range(frame_number + 1, last_frame + 1):

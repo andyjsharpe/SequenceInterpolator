@@ -49,6 +49,7 @@ class ValueInspector(tk.Frame):
         self.grid_columnconfigure(0, weight=1)
         self.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
         self.frame = None
+        self.items = []
         self.update_values()
 
     def update_values(self):
@@ -64,8 +65,8 @@ class ValueInspector(tk.Frame):
         frames_entry = tk.Entry(self.frame, width=int(len(selected_interpolatable.name)*1.1), background=white, foreground=black, textvariable=name_var)
         frames_entry.grid(row=0, column=0, sticky='nsew')
         # Save/Load
-        tk.Button(self.frame, text='Save as', command=lambda:save_interpolatable(name_var)).grid(row=0, column=1, sticky='nsew')
-        tk.Button(self.frame, text='Load', command=lambda:load_interpolatable()).grid(row=0, column=2, sticky='nsew')
+        tk.Button(self.frame, text='Save as', command=lambda:save_interpolatable(name_var)).grid(row=0, column=2, sticky='nsew')
+        tk.Button(self.frame, text='Load', command=lambda:load_interpolatable()).grid(row=0, column=3, sticky='nsew')
         # New Key Name
         key_var = tk.StringVar(value="Category Name")
         key_entry = tk.Entry(self.frame, width=int(len(key_var.get())*1.1), background=white, foreground=black, textvariable=key_var)
@@ -75,14 +76,32 @@ class ValueInspector(tk.Frame):
         tk.Checkbutton(self.frame, text='Negative?', variable=negative).grid(row=1, column=1, sticky='nsew')
         # New Button
         tk.Button(self.frame, text='Add Category', command=lambda: add_key(key_var, negative)).grid(row=1, column=2, sticky='nsew')
+        # Apply all
+        tk.Button(self.frame, text='Apply All', command=lambda: apply_all_values(self.items)).grid(row=1, column=3,
+                                                                                                    sticky='nsew')
+        # Change Name
+        tk.Button(self.frame, text='Change Name', command=lambda: change_name(name_var)).grid(row=0, column=1,
+                                                                                                   sticky='nsew')
         item_frame = Scrollable(self.frame, 400, 400)
-        item_frame.grid(row=2, column=0, sticky="nsew", columnspan=3)
+        item_frame.grid(row=2, column=0, sticky="nsew", columnspan=4)
         # Key Value Stuff
         key_count = 0
         for key, value in selected_interpolatable.data.items():
-            InterpolatableKeyValueFrame(item_frame.interior, key, value).grid(row=key_count, column=0, padx=10, pady=10, sticky="nsew")
+            val = InterpolatableKeyValueFrame(item_frame.interior, key, value)
+            self.items.append(val)
+            val.grid(row=key_count, column=0, padx=10, pady=10, sticky="nsew")
             key_count += 1
 
+
+def change_name(val):
+    selected_interpolatable.name = val.get()
+    mainApp.reload_all()
+
+
+def apply_all_values(items):
+    for item in items:
+        selected_interpolatable.data[item.key] = item.val_var.get()
+    mainApp.reload_all()
 
 
 def save_interpolatable(var):
@@ -96,13 +115,14 @@ def load_interpolatable():
 
 class InterpolatableKeyValueFrame(tk.Frame):
     def __init__(self, parent, key, value, *args, **kwargs):
+        self.key = key
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.grid_columnconfigure(1, weight=1)
         tk.Label(self, text='{}: '.format(key)).grid(row=0, column=0, sticky='nsew')
-        val_var = tk.StringVar(value=value)
-        frames_entry = tk.Entry(self, width=int(len(val_var.get())*1.1), background=white, foreground=black, textvariable=val_var)
+        self.val_var = tk.StringVar(value=value)
+        frames_entry = tk.Entry(self, width=int(len(self.val_var.get())*1.1), background=white, foreground=black, textvariable=self.val_var)
         frames_entry.grid(row=0, column=1, sticky='nsew')
-        tk.Button(self, text='Apply', command=lambda: apply_value(key, val_var)).grid(row=0, column=3, sticky='nsew')
+        tk.Button(self, text='Apply', command=lambda: apply_value(key, self.val_var)).grid(row=0, column=3, sticky='nsew')
         tk.Button(self, text='X', command=lambda: delete_key(key)).grid(row=0, column=4, sticky='nsew')
 
 
@@ -118,6 +138,7 @@ class KeyframeInspector(tk.Frame):
         self.grid_columnconfigure(0, weight=1)
         self.grid(row=0, column=1, sticky="nsew", padx=2, pady=2)
         self.frame = None
+        self.items = []
         self.update_values()
 
     def update_values(self):
@@ -129,20 +150,60 @@ class KeyframeInspector(tk.Frame):
         if selected_interpolatable is None:
             return
         # Name
-        tk.Label(self.frame, text='{}: Frame #{}'.format(selected_interpolatable.name, selected_frame)).grid(row=0, column=0, sticky='nsew')
+        tk.Label(self.frame, text='{}: Frame {}'.format(selected_interpolatable.name, selected_frame)).grid(row=0, column=0, sticky='nsew')
         # Save/Load
         tk.Button(self.frame, text='Save as', command=lambda:save_transition()).grid(row=0, column=1, sticky='nsew')
         tk.Button(self.frame, text='Load to Frame', command=lambda:load_transition()).grid(row=0, column=2, sticky='nsew')
         # On Button
         use_button(self.frame, selected_interpolatable, selected_frame).grid(row=1, column=0, sticky='nsew')
         item_frame = Scrollable(self.frame, 400, 400)
-        item_frame.grid(row=2, column=0, sticky="nsew", columnspan=3)
+        item_frame.grid(row=2, column=0, sticky="nsew", columnspan=4)
+        # Apply changed
+        tk.Button(self.frame, text='Apply Changed', command=lambda: apply_changed_transitions(self.items)).grid(row=1, column=1,
+                                                                                                   sticky='nsew')
+        # Apply all
+        tk.Button(self.frame, text='Apply All', command=lambda: apply_all_transitions(self.items)).grid(row=1, column=2,
+                                                                                                   sticky='nsew')
+        # Apply to subject
+        tk.Button(self.frame, text='Apply To Subject', command=lambda: apply_all_transitions_to_subject(self.items)).grid(row=1, column=3,
+                                                                                                        sticky='nsew')
+        # Reset
+        tk.Button(self.frame, text='Reset',
+                  command=lambda: reset_transitions()).grid(row=0, column=3,
+                                                                                     sticky='nsew')
         # Key Value Stuff
         key_count = 0
         for key, value in selected_interpolatable.data.items():
-            InterpolatableAnimFrame(item_frame.interior, key, selected_interpolatable.get_value_on_frame(selected_frame, key)).grid(row=key_count, column=0, padx=2, pady=2,
-                                                               sticky="nsew")
+            item = InterpolatableAnimFrame(item_frame.interior, key, selected_interpolatable.get_value_on_frame(selected_frame, key))
+            self.items.append(item)
+            item.grid(row=key_count, column=0, padx=2, pady=2, sticky="nsew")
             key_count += 1
+
+def reset_transitions():
+    selected_interpolatable.transitions.pop(selected_frame)
+    if selected_frame == 0:
+        selected_interpolatable.add_transition(selected_frame, 'On', True)
+    mainApp.reload_all()
+
+
+def apply_all_transitions_to_subject(items):
+    for item in items:
+        selected_interpolatable.data[item.key] = item.val_var.get()
+    mainApp.reload_all()
+
+
+def apply_all_transitions(items):
+    for item in items:
+        selected_interpolatable.add_transition(selected_frame, item.key, item.val_var.get())
+    mainApp.reload_all()
+
+
+def apply_changed_transitions(items):
+    for item in items:
+        val = item.val_var.get()
+        if selected_interpolatable.get_value_on_frame(selected_frame, item.key) != val:
+            selected_interpolatable.add_transition(selected_frame, item.key, val)
+    mainApp.reload_all()
 
 
 def save_transition():
@@ -173,6 +234,7 @@ def turn_frame_off(interp, frame, value):
 
 class InterpolatableAnimFrame(tk.Frame):
     def __init__(self, parent, key, value, *args, **kwargs):
+        self.key = key
         tk.Frame.__init__(self, parent, *args, **kwargs)
         color = get_key_time_color(selected_interpolatable, selected_frame, key, blue, gold)
         if color is not None:
@@ -180,10 +242,10 @@ class InterpolatableAnimFrame(tk.Frame):
             self.configure(highlightthickness=8,highlightbackground=color)
         self.grid_columnconfigure(1, weight=1)
         tk.Label(self, text='{}: '.format(key)).grid(row=0, column=0, sticky='nsew')
-        val_var = tk.StringVar(value=value)
-        frames_entry = tk.Entry(self, width=int(len(val_var.get())*1.1), background=white, foreground=black, textvariable=val_var)
+        self.val_var = tk.StringVar(value=value)
+        frames_entry = tk.Entry(self, width=int(len(self.val_var.get())*1.1), background=white, foreground=black, textvariable=self.val_var)
         frames_entry.grid(row=0, column=1, sticky='nsew')
-        tk.Button(self, text='Apply', command=lambda:apply_keyframe(key, val_var)).grid(row=0, column=3, sticky='nsew')
+        tk.Button(self, text='Apply', command=lambda:apply_keyframe(key, self.val_var)).grid(row=0, column=3, sticky='nsew')
         tk.Button(self, text='X', command=lambda: clear_transition_from_frame(key)).grid(row=0, column=4, sticky='nsew')
 
 
