@@ -548,30 +548,48 @@ class Scrollable(tk.Frame):
         hscrollbar = ttk.Scrollbar(self, orient='horizontal')
         hscrollbar.grid(row=1, column=0, sticky="we")
 
-        canvas = tk.Canvas(self, bd=0, highlightthickness=0,
+        self.canvas = tk.Canvas(self, bd=0, highlightthickness=0,
                            yscrollcommand=vscrollbar.set, xscrollcommand=hscrollbar.set, bg=navy)
-        canvas.grid(row=0, column=0, sticky="nsew")
-        vscrollbar.config(command=canvas.yview)
-        hscrollbar.config(command=canvas.xview)
+        self.canvas.grid(row=0, column=0, sticky="nsew")
+        vscrollbar.config(command=self.canvas.yview)
+        hscrollbar.config(command=self.canvas.xview)
 
         # Reset the view
-        canvas.xview_moveto(0)
-        canvas.yview_moveto(0)
+        self.canvas.xview_moveto(0)
+        self.canvas.yview_moveto(0)
 
         # Create a frame inside the canvas which will be scrolled with it.
-        self.interior = interior = tk.Frame(canvas, bg=navy)
-        interior_id = canvas.create_window(0, 0, window=interior, anchor='nw')
+        self.interior = tk.Frame(self.canvas, bg=navy)
+        interior_id = self.canvas.create_window(0, 0, window=self.interior, anchor='nw')
 
-        canvas.config(width=self.width)
-        canvas.config(height=self.height)
+        # Bind and unbind wheel
+        self.canvas.bind('<Enter>', self._bound_to_mousewheel)
+        self.canvas.bind('<Leave>', self._unbound_to_mousewheel)
+
+        self.canvas.config(width=self.width)
+        self.canvas.config(height=self.height)
 
         # Track changes to the canvas and frame width and sync them,
         # also updating the scrollbar.
         def _configure_interior(event):
             # Update the scrollbars to match the size of the inner frame.
-            size = (interior.winfo_reqwidth(), interior.winfo_reqheight())
-            canvas.config(scrollregion="0 0 %s %s" % size)
-        interior.bind('<Configure>', _configure_interior)
+            size = (self.interior.winfo_reqwidth(), self.interior.winfo_reqheight())
+            self.canvas.config(scrollregion="0 0 %s %s" % size)
+        self.interior.bind('<Configure>', _configure_interior)
+
+    def _bound_to_mousewheel(self, event):
+        self.canvas.bind_all("<MouseWheel>", self.mouse_scroll_y)
+        self.canvas.bind_all("<Shift - MouseWheel>", self.mouse_scroll_x)
+
+    def _unbound_to_mousewheel(self, event):
+        self.canvas.unbind_all("<MouseWheel>")
+        self.canvas.unbind_all("<Shift - MouseWheel>")
+
+    def mouse_scroll_y(self, event):
+        self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+    def mouse_scroll_x(self, event):
+        self.canvas.xview_scroll(int(-1 * (event.delta / 120)), "units")
 
 
 class TimelineButton(tk.Button):
