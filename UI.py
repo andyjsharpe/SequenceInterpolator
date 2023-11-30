@@ -62,14 +62,14 @@ class ValueInspector(tk.Frame):
             return
         # Name
         name_var = tk.StringVar(value=selected_interpolatable.name)
-        frames_entry = tk.Entry(self.frame, width=int(len(selected_interpolatable.name)*1.1), background=white, foreground=black, textvariable=name_var)
+        frames_entry = tk.Entry(self.frame, width=int(len(selected_interpolatable.name)*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=name_var)
         frames_entry.grid(row=0, column=0, sticky='nsew')
         # Save/Load
         tk.Button(self.frame, text='Save As', command=lambda:save_interpolatable(name_var), bg=grey, fg=white).grid(row=0, column=2, sticky='nsew')
         tk.Button(self.frame, text='Load', command=lambda:load_interpolatable(), bg=grey, fg=white).grid(row=0, column=3, sticky='nsew')
         # New Key Name
         key_var = tk.StringVar(value="Category Name")
-        key_entry = tk.Entry(self.frame, width=int(len(key_var.get())*1.1), background=white, foreground=black, textvariable=key_var)
+        key_entry = tk.Entry(self.frame, width=int(len(key_var.get())*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=key_var)
         key_entry.grid(row=1, column=0, sticky='nsew')
         # Negative button
         negative = tk.BooleanVar(value=False)
@@ -82,7 +82,7 @@ class ValueInspector(tk.Frame):
         # Change Name
         tk.Button(self.frame, text='Change Name', command=lambda: change_name(name_var), bg=grey, fg=white).grid(row=0, column=1,
                                                                                                    sticky='nsew')
-        item_frame = Scrollable(self.frame, 400, 400)
+        item_frame = Scrollable(self.frame)
         item_frame.grid(row=2, column=0, sticky="nsew", columnspan=4)
         # Key Value Stuff
         key_count = 0
@@ -120,7 +120,7 @@ class InterpolatableKeyValueFrame(tk.Frame):
         self.grid_columnconfigure(1, weight=1)
         tk.Label(self, text='{}: '.format(key), bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=0, column=0, sticky='nsew')
         self.val_var = tk.StringVar(value=value)
-        frames_entry = tk.Entry(self, width=int(len(self.val_var.get())*1.1), background=white, foreground=black, textvariable=self.val_var)
+        frames_entry = tk.Entry(self, width=int(len(self.val_var.get())*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=self.val_var)
         frames_entry.grid(row=0, column=1, sticky='nsew')
         tk.Button(self, text='Apply', command=lambda: apply_value(key, self.val_var), bg=grey, fg=white).grid(row=0, column=3, sticky='nsew')
         tk.Button(self, text='X', command=lambda: delete_key(key), bg=grey, fg=white).grid(row=0, column=4, sticky='nsew')
@@ -156,7 +156,7 @@ class KeyframeInspector(tk.Frame):
         tk.Button(self.frame, text='Load to Frame', command=lambda:load_transition(), bg=grey, fg=white).grid(row=0, column=2, sticky='nsew')
         # On Button
         use_button(self.frame, selected_interpolatable, selected_frame, bg=grey, fg=white).grid(row=1, column=0, sticky='nsew')
-        item_frame = Scrollable(self.frame, 400, 400)
+        item_frame = Scrollable(self.frame)
         item_frame.grid(row=2, column=0, sticky="nsew", columnspan=4)
         # Apply changed
         tk.Button(self.frame, text='Apply Changed', command=lambda: apply_changed_transitions(self.items), bg=grey, fg=white).grid(row=1, column=1,
@@ -239,11 +239,11 @@ class InterpolatableAnimFrame(tk.Frame):
         color = get_key_time_color(selected_interpolatable, selected_frame, key, blue, orange)
         if color is not None:
             color = add_colors_and_adjust_brightness(color, "#222222", 0.8, "#000000")
-            self.configure(highlightthickness=8,highlightbackground=color)
+            self.configure(highlightthickness=8,highlightbackground=color,highlightcolor=color)
         self.grid_columnconfigure(1, weight=1)
         tk.Label(self, text='{}: '.format(key), bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=0, column=0, sticky='nsew')
         self.val_var = tk.StringVar(value=value)
-        frames_entry = tk.Entry(self, width=int(len(self.val_var.get())*1.1), background=white, foreground=black, textvariable=self.val_var)
+        frames_entry = tk.Entry(self, width=int(len(self.val_var.get())*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=self.val_var)
         frames_entry.grid(row=0, column=1, sticky='nsew')
         tk.Button(self, text='Apply', command=lambda:apply_keyframe(key, self.val_var), bg=grey, fg=white).grid(row=0, column=3, sticky='nsew')
         tk.Button(self, text='X', command=lambda: clear_transition_from_frame(key), bg=grey, fg=white).grid(row=0, column=4, sticky='nsew')
@@ -274,7 +274,7 @@ class Settings(tk.Frame):
         tk.Label(self, text='Last Frame: ', bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=1, column=0, sticky='nsew')
         last_var = tk.IntVar(value=lastFrame)
         last_value = self.register(Under_100)
-        last_entry = tk.Entry(self, width=int(len(str(lastFrame))*1.1), background=white, foreground=black, textvariable=last_var,
+        last_entry = tk.Entry(self, width=int(len(str(lastFrame))*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=last_var,
                                 validate="key", validatecommand=(last_value, '%d'))
         last_entry.grid(row=1, column=1, sticky='nsew')
         tk.Button(self, text='Apply', command=lambda:apply_last_frame(last_var), bg=grey, fg=white).grid(row=1, column=2, sticky='nsew')
@@ -282,7 +282,7 @@ class Settings(tk.Frame):
         tk.Label(self, text='Keyframe Multiplier: ', bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=2, column=0, sticky='nsew')
         key_mult_value = self.register(Under_100)
         key_mult_var = tk.IntVar(value=keyframeMultiplier)
-        key_mult_entry = tk.Entry(self, width=int(len(str(keyframeMultiplier))*1.1), background=white, foreground=black, textvariable=key_mult_var,
+        key_mult_entry = tk.Entry(self, width=int(len(str(keyframeMultiplier))*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=key_mult_var,
                               validate="key", validatecommand=(key_mult_value, '%P'))
         key_mult_entry.grid(row=2, column=1, sticky='nsew')
         tk.Button(self, text='Apply', command=lambda:apply_keyframe_multiplier(key_mult_var), bg=grey, fg=white).grid(row=2, column=2, sticky='nsew')
@@ -290,7 +290,7 @@ class Settings(tk.Frame):
         tk.Label(self, text='Transition Multiplier: ', bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=3, column=0, sticky='nsew')
         interp_mult_value = self.register(Under_100)
         interp_mult_var = tk.IntVar(value=transitionMultiplier)
-        interp_mult_entry = tk.Entry(self, width=int(len(str(transitionMultiplier))*1.1), background=white, foreground=black, textvariable=interp_mult_var,
+        interp_mult_entry = tk.Entry(self, width=int(len(str(transitionMultiplier))*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=interp_mult_var,
                                   validate="key", validatecommand=(interp_mult_value, '%P'))
         interp_mult_entry.grid(row=3, column=1, sticky='nsew')
         tk.Button(self, text='Apply', command=lambda:apply_transition_multiplier(interp_mult_var), bg=grey, fg=white).grid(row=3, column=2, sticky='nsew')
@@ -474,7 +474,7 @@ class Timeline(tk.Frame):
     def update_timeline(self):
         if self.frame is not None:
             self.frame.destroy()
-        self.frame = Scrollable(self, 1028, 200)
+        self.frame = Scrollable(self)
         # self.frame.grid_columnconfigure(0, weight=1)
         self.frame.grid(row=0, column=0, sticky='nsew')
         self.frame = self.frame.interior
@@ -483,7 +483,7 @@ class Timeline(tk.Frame):
         new_frame.grid(row=0, column=0)
         # New Name
         name_var = tk.StringVar(value='Subject Name')
-        name_entry = tk.Entry(new_frame, width=int(len(name_var.get())*1.1), background=white, foreground=black,
+        name_entry = tk.Entry(new_frame, width=int(len(name_var.get())*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4,
                                 textvariable=name_var)
         name_entry.grid(row=0, column=0, sticky='nsew')
         # New Button
@@ -537,11 +537,13 @@ def get_time_color(interp, frame, use_selected, selected_color, key_color, on_co
     return color
 
 class Scrollable(tk.Frame):
-    def __init__(self, parent, width, height, *args, **kw):
+    def __init__(self, parent: tk.Frame, *args, **kw):
         tk.Frame.__init__(self, parent, *args, **kw)
 
-        self.width = width
-        self.height = height
+        self.parent = parent
+
+        #self.width = width
+        #self.height = height
 
         vscrollbar = ttk.Scrollbar(self, orient='vertical')
         vscrollbar.grid(row=0, column=1, sticky="ns")
@@ -566,20 +568,32 @@ class Scrollable(tk.Frame):
         self.canvas.bind('<Enter>', self._bound_to_mousewheel)
         self.canvas.bind('<Leave>', self._unbound_to_mousewheel)
 
-        self.canvas.config(width=self.width)
-        self.canvas.config(height=self.height)
+        #self.canvas.config(width=self.width)
+        #self.canvas.config(height=self.height)
 
-        # Track changes to the canvas and frame width and sync them,
-        # also updating the scrollbar.
-        def _configure_interior(event):
-            # Update the scrollbars to match the size of the inner frame.
-            size = (self.interior.winfo_reqwidth(), self.interior.winfo_reqheight())
-            self.canvas.config(scrollregion="0 0 %s %s" % size)
-        self.interior.bind('<Configure>', _configure_interior)
+        self.master.bind('<Configure>', self._configure_interior)
+        #self.interior.bind('<Configure>', self._configure_interior)
+
+    # Track changes to the canvas and frame width and sync them,
+    # also updating the scrollbar.
+    def _configure_interior(self, event):
+        # Update the scrollbars to match the size of the inner frame.
+        size = (self.interior.winfo_reqwidth(), self.interior.winfo_reqheight())
+        self.canvas.config(scrollregion="0 0 %s %s" % size)
+        width = self.parent.winfo_width() - 20
+        if width > self.canvas.winfo_width():
+            # Update the canvas's width to fit the inner frame.
+            self.canvas.config(width=width)
+        height = self.parent.winfo_height() - 20
+        if height > self.canvas.winfo_width():
+            # Update the canvas's width to fit the inner frame.
+            self.canvas.config(height=height)
+
 
     def _bound_to_mousewheel(self, event):
         self.canvas.bind_all("<MouseWheel>", self.mouse_scroll_y)
         self.canvas.bind_all("<Shift - MouseWheel>", self.mouse_scroll_x)
+        self._configure_interior(None)
 
     def _unbound_to_mousewheel(self, event):
         self.canvas.unbind_all("<MouseWheel>")
@@ -609,9 +623,15 @@ class MainApplication(tk.Frame):
 
     def __init__(self, parent, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
+        self.grid_columnconfigure(0 ,weight=1)
+        self.grid_rowconfigure(0, weight=1)
         self.parent = parent
 
-        self.configure_gui()
+        scroll = Scrollable(self)
+        scroll.grid(row=0, column=0, sticky='nsew')
+
+        self.interior = scroll.interior
+        self.interior.configure(bg=black)
 
         self.valueInspector = None
         self.keyframeInspector = None
@@ -619,32 +639,29 @@ class MainApplication(tk.Frame):
         self.timeline = None
         self.create_widgets()
 
-    def configure_gui(self):
-        self.parent.title("Sequence Interpolator")
-        self.parent.geometry("1047x695")
 
     def create_widgets(self):
         # UI Contains Value Inspector, Keyframe inspector, Settings, and Timeline:
-        self.valueInspector = ValueInspector(self)
-        self.keyframeInspector = KeyframeInspector(self)
-        self.settings = Settings(self)
-        self.timeline = Timeline(self)
+        self.valueInspector = ValueInspector(self.interior)
+        self.keyframeInspector = KeyframeInspector(self.interior)
+        self.settings = Settings(self.interior)
+        self.timeline = Timeline(self.interior)
 
     def reload_value_inspector(self):
         self.valueInspector.destroy()
-        self.valueInspector = ValueInspector(self)
+        self.valueInspector = ValueInspector(self.interior)
 
     def reload_keyframe_inspector(self):
         self.keyframeInspector.destroy()
-        self.keyframeInspector = KeyframeInspector(self)
+        self.keyframeInspector = KeyframeInspector(self.interior)
 
     def reload_timeline(self):
         self.timeline.destroy()
-        self.timeline = Timeline(self)
+        self.timeline = Timeline(self.interior)
 
     def reload_settings(self):
         self.settings.destroy()
-        self.settings = Settings(self)
+        self.settings = Settings(self.interior)
 
     def reload_all(self):
         self.reload_keyframe_inspector()
@@ -655,8 +672,12 @@ class MainApplication(tk.Frame):
 
 def create_ui():
     root = tk.Tk()
+    root.title("Sequence Interpolator")
+    root.geometry("1200x700")
+    root.state('zoomed')
+    #root.eval('tk::PlaceWindow . center')
     global mainApp
     mainApp = MainApplication(root, bg=black)
     mainApp.pack(side="top", fill="both", expand=True)
-    root.eval('tk::PlaceWindow . center')
+
     root.mainloop()
