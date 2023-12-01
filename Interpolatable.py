@@ -98,6 +98,12 @@ class Interpolatable:
     def get_on(self, frame_number: int):
         return self.get_value_on_frame(frame_number, 'On')
 
+    def get_key_exists(self, frame_number: int, key):
+        if frame_number in self.transitions:
+            if 'On' in self.transitions[frame_number]:
+                return key in self.transitions[frame_number]
+        return False
+
     def get_key(self, frame_number: int, include_on: bool = True):
         if frame_number in self.transitions:
             if 'On' in self.transitions[frame_number]:
@@ -118,7 +124,7 @@ class Interpolatable:
         for key in self.data:
             value = None
             # See if there is a keyframe on this frame
-            if self.get_key(frame_number, False):
+            if self.get_key_exists(frame_number, key):
                 # if so use the keyframe value
                 value = self.get_value_on_frame(frame_number, key)
             elif frame_number == 0:
@@ -189,10 +195,16 @@ class Interpolatable:
         return low2 + (value - low1) * (high2 - low2) / (high1 - low1)
 
     def mix_values(self, value1, value2, completion):
-        if value1 == value2:
-            return value1
         rounded = round(completion*100)/100
-        inverse_rounded = round((1-completion) * 100) / 100
+        inverse_rounded = round((1 - completion) * 100) / 100
+        if value1 == value2 or rounded == 0:
+            return value1
+        elif rounded == 1:
+            return value2
+        if value1 is None or value1 == '':
+            return '({}:{})'.format(value2, rounded)
+        if value2 is None or value2 == '':
+            return '({}:{})'.format(value1, inverse_rounded)
         return '{{({}:{}) | ({}:{})}}'.format(value1, inverse_rounded, value2, rounded)
 
     def get_next_transition(self, frame_number: int, last_frame: int, key):
