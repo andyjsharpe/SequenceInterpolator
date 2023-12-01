@@ -136,7 +136,7 @@ class Interpolatable:
                 else:
                     # set value to before
                     value = before_value
-            if value is None:
+            if value is None or len(value) == 0:
                 continue
             if key.startswith('(Negative)'):
                 negatives.append(value)
@@ -170,7 +170,7 @@ class Interpolatable:
             else:
                 # set value to before
                 value = before_value
-            if value is None:
+            if value is None or len(value) == 0:
                 continue
             if key.startswith('(Negative)'):
                 negatives.append(value)
@@ -189,6 +189,8 @@ class Interpolatable:
         return low2 + (value - low1) * (high2 - low2) / (high1 - low1)
 
     def mix_values(self, value1, value2, completion):
+        if value1 == value2:
+            return value1
         rounded = round(completion*100)/100
         inverse_rounded = round((1-completion) * 100) / 100
         return '{{({}:{}) | ({}:{})}}'.format(value1, inverse_rounded, value2, rounded)

@@ -62,14 +62,14 @@ class ValueInspector(tk.Frame):
             return
         # Name
         name_var = tk.StringVar(value=selected_interpolatable.name)
-        frames_entry = tk.Entry(self.frame, width=int(len(selected_interpolatable.name)*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=name_var)
+        frames_entry = tk.Entry(self.frame, width=get_entry_width(name_var), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=name_var)
         frames_entry.grid(row=0, column=0, sticky='nsew')
         # Save/Load
         tk.Button(self.frame, text='Save As', command=lambda:save_interpolatable(name_var), bg=grey, fg=white).grid(row=0, column=2, sticky='nsew')
         tk.Button(self.frame, text='Load', command=lambda:load_interpolatable(), bg=grey, fg=white).grid(row=0, column=3, sticky='nsew')
         # New Key Name
         key_var = tk.StringVar(value="Category Name")
-        key_entry = tk.Entry(self.frame, width=int(len(key_var.get())*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=key_var)
+        key_entry = tk.Entry(self.frame, width=get_entry_width(key_var), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=key_var)
         key_entry.grid(row=1, column=0, sticky='nsew')
         # Negative button
         negative = tk.BooleanVar(value=False)
@@ -120,7 +120,7 @@ class InterpolatableKeyValueFrame(tk.Frame):
         self.grid_columnconfigure(2, weight=1)
         tk.Label(self, text='{}: '.format(key), bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=0, column=1, sticky='nsew')
         self.val_var = tk.StringVar(value=value)
-        frames_entry = tk.Entry(self, width=int(len(self.val_var.get())*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=self.val_var)
+        frames_entry = tk.Entry(self, width=get_entry_width(self.val_var), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=self.val_var)
         frames_entry.grid(row=0, column=2, sticky='nsew')
         tk.Button(self, text='Apply', command=lambda: apply_value(key, self.val_var), bg=grey, fg=white).grid(row=0, column=3, sticky='nsew')
         tk.Button(self, text='X', command=lambda: delete_key(key), bg=grey, fg=white).grid(row=0, column=0, sticky='nsew')
@@ -228,8 +228,7 @@ def turn_frame_off(interp, frame, value):
         interp.transitions[frame]['On'] = value
     else:
         interp.transitions[frame] = {'On': value}
-    mainApp.reload_timeline()
-    mainApp.reload_keyframe_inspector()
+    mainApp.reload_all()
 
 
 class InterpolatableAnimFrame(tk.Frame):
@@ -243,10 +242,20 @@ class InterpolatableAnimFrame(tk.Frame):
         self.grid_columnconfigure(2, weight=1)
         tk.Label(self, text='{}: '.format(key), bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=0, column=1, sticky='nsew')
         self.val_var = tk.StringVar(value=value)
-        frames_entry = tk.Entry(self, width=int(len(self.val_var.get())*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=self.val_var)
+        frames_entry = tk.Entry(self, width=get_entry_width(self.val_var), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=self.val_var)
         frames_entry.grid(row=0, column=2, sticky='nsew')
         tk.Button(self, text='Apply', command=lambda: apply_keyframe(key, self.val_var), bg=grey, fg=white).grid(row=0, column=3, sticky='nsew')
         tk.Button(self, text='X', command=lambda: clear_transition_from_frame(key), bg=grey, fg=white).grid(row=0, column=0, sticky='nsew')
+
+
+def get_entry_width(val) -> int:
+    value = val.get()
+    if isinstance(value, str):
+        return int((len(value) - value.count(' ') + 1))
+    elif isinstance(value, int) or isinstance(value, float):
+        return int(value + 1)
+    else:
+        return 1
 
 
 def clear_transition_from_frame(key):
@@ -274,7 +283,7 @@ class Settings(tk.Frame):
         tk.Label(self, text='Last Frame: ', bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=1, column=0, sticky='nsew')
         last_var = tk.IntVar(value=lastFrame)
         last_value = self.register(Under_100)
-        last_entry = tk.Entry(self, width=int(len(str(lastFrame))*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=last_var,
+        last_entry = tk.Entry(self, width=get_entry_width(last_var), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=last_var,
                                 validate="key", validatecommand=(last_value, '%d'))
         last_entry.grid(row=1, column=1, sticky='nsew')
         tk.Button(self, text='Apply', command=lambda:apply_last_frame(last_var), bg=grey, fg=white).grid(row=1, column=2, sticky='nsew')
@@ -282,7 +291,7 @@ class Settings(tk.Frame):
         tk.Label(self, text='Keyframe Multiplier: ', bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=2, column=0, sticky='nsew')
         key_mult_value = self.register(Under_100)
         key_mult_var = tk.IntVar(value=keyframeMultiplier)
-        key_mult_entry = tk.Entry(self, width=int(len(str(keyframeMultiplier))*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=key_mult_var,
+        key_mult_entry = tk.Entry(self, width=get_entry_width(key_mult_var), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=key_mult_var,
                               validate="key", validatecommand=(key_mult_value, '%P'))
         key_mult_entry.grid(row=2, column=1, sticky='nsew')
         tk.Button(self, text='Apply', command=lambda:apply_keyframe_multiplier(key_mult_var), bg=grey, fg=white).grid(row=2, column=2, sticky='nsew')
@@ -290,7 +299,7 @@ class Settings(tk.Frame):
         tk.Label(self, text='Transition Multiplier: ', bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=3, column=0, sticky='nsew')
         interp_mult_value = self.register(Under_100)
         interp_mult_var = tk.IntVar(value=transitionMultiplier)
-        interp_mult_entry = tk.Entry(self, width=int(len(str(transitionMultiplier))*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=interp_mult_var,
+        interp_mult_entry = tk.Entry(self, width=get_entry_width(interp_mult_var), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=interp_mult_var,
                                   validate="key", validatecommand=(interp_mult_value, '%P'))
         interp_mult_entry.grid(row=3, column=1, sticky='nsew')
         tk.Button(self, text='Apply', command=lambda:apply_transition_multiplier(interp_mult_var), bg=grey, fg=white).grid(row=3, column=2, sticky='nsew')
@@ -487,7 +496,7 @@ class Timeline(tk.Frame):
         new_frame.grid(row=0, column=0)
         # New Name
         name_var = tk.StringVar(value='Subject Name')
-        name_entry = tk.Entry(new_frame, width=int(len(name_var.get())*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4,
+        name_entry = tk.Entry(new_frame, width=get_entry_width(name_var), background=white, foreground=black, highlightbackground=navy, highlightthickness=4,
                                 textvariable=name_var)
         name_entry.grid(row=0, column=0, sticky='nsew')
         # New Button
