@@ -245,7 +245,7 @@ class InterpolatableAnimFrame(tk.Frame):
         self.val_var = tk.StringVar(value=value)
         frames_entry = tk.Entry(self, width=int(len(self.val_var.get())*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=self.val_var)
         frames_entry.grid(row=0, column=2, sticky='nsew')
-        tk.Button(self, text='Apply', command=lambda:apply_keyframe(key, self.val_var), bg=grey, fg=white).grid(row=0, column=3, sticky='nsew')
+        tk.Button(self, text='Apply', command=lambda: apply_keyframe(key, self.val_var), bg=grey, fg=white).grid(row=0, column=3, sticky='nsew')
         tk.Button(self, text='X', command=lambda: clear_transition_from_frame(key), bg=grey, fg=white).grid(row=0, column=0, sticky='nsew')
 
 
@@ -257,7 +257,7 @@ def clear_transition_from_frame(key):
 
 def apply_keyframe(key, var):
     selected_interpolatable.add_transition(selected_frame, key, var.get())
-    mainApp.reload_keyframe_inspector()
+    mainApp.reload_all()
 
 
 class Settings(tk.Frame):
@@ -397,10 +397,14 @@ def load_sequence():
         global lastFrame
         global keyframeMultiplier
         global transitionMultiplier
+        global selected_interpolatable
+        global selected_frame
         interpolatables = sequence[0]
         lastFrame = sequence[1]
         keyframeMultiplier = sequence[2]
         transitionMultiplier = sequence[3]
+        selected_interpolatable = interpolatables[0]
+        selected_frame = 0
         mainApp.reload_all()
         mainApp.reload_settings()
     except:
