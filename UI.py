@@ -117,13 +117,13 @@ class InterpolatableKeyValueFrame(tk.Frame):
     def __init__(self, parent, key, value, *args, **kwargs):
         self.key = key
         tk.Frame.__init__(self, parent, *args, **kwargs)
-        self.grid_columnconfigure(1, weight=1)
-        tk.Label(self, text='{}: '.format(key), bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=0, column=0, sticky='nsew')
+        self.grid_columnconfigure(2, weight=1)
+        tk.Label(self, text='{}: '.format(key), bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=0, column=1, sticky='nsew')
         self.val_var = tk.StringVar(value=value)
         frames_entry = tk.Entry(self, width=int(len(self.val_var.get())*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=self.val_var)
-        frames_entry.grid(row=0, column=1, sticky='nsew')
+        frames_entry.grid(row=0, column=2, sticky='nsew')
         tk.Button(self, text='Apply', command=lambda: apply_value(key, self.val_var), bg=grey, fg=white).grid(row=0, column=3, sticky='nsew')
-        tk.Button(self, text='X', command=lambda: delete_key(key), bg=grey, fg=white).grid(row=0, column=4, sticky='nsew')
+        tk.Button(self, text='X', command=lambda: delete_key(key), bg=grey, fg=white).grid(row=0, column=0, sticky='nsew')
 
 
 def apply_value(key, var):
@@ -240,13 +240,13 @@ class InterpolatableAnimFrame(tk.Frame):
         if color is not None:
             color = add_colors_and_adjust_brightness(color, "#222222", 0.8, "#000000")
             self.configure(highlightthickness=8,highlightbackground=color,highlightcolor=color)
-        self.grid_columnconfigure(1, weight=1)
-        tk.Label(self, text='{}: '.format(key), bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=0, column=0, sticky='nsew')
+        self.grid_columnconfigure(2, weight=1)
+        tk.Label(self, text='{}: '.format(key), bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=0, column=1, sticky='nsew')
         self.val_var = tk.StringVar(value=value)
         frames_entry = tk.Entry(self, width=int(len(self.val_var.get())*1.1), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=self.val_var)
-        frames_entry.grid(row=0, column=1, sticky='nsew')
+        frames_entry.grid(row=0, column=2, sticky='nsew')
         tk.Button(self, text='Apply', command=lambda:apply_keyframe(key, self.val_var), bg=grey, fg=white).grid(row=0, column=3, sticky='nsew')
-        tk.Button(self, text='X', command=lambda: clear_transition_from_frame(key), bg=grey, fg=white).grid(row=0, column=4, sticky='nsew')
+        tk.Button(self, text='X', command=lambda: clear_transition_from_frame(key), bg=grey, fg=white).grid(row=0, column=0, sticky='nsew')
 
 
 def clear_transition_from_frame(key):
@@ -633,9 +633,9 @@ class TimelineButton(tk.Button):
 class InterpolatableFrame(tk.Frame):
     def __init__(self, parent, interp, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
-        self.grid_columnconfigure(0, weight=1)
-        tk.Label(self, text=interp.name, bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=0, column=0, sticky='nsew')
-        tk.Button(self, text='X', command=lambda: delete_Interpolatable(interp), bg=grey, fg=white).grid(row=0, column=1, sticky='nsew')
+        self.grid_columnconfigure(1, weight=1)
+        tk.Label(self, text=interp.name, bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=0, column=1, sticky='nsew')
+        tk.Button(self, text='X', command=lambda: delete_Interpolatable(interp), bg=grey, fg=white).grid(row=0, column=0, sticky='nsew')
 
 
 class MainApplication(tk.Frame):
