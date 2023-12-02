@@ -251,9 +251,9 @@ class InterpolatableAnimFrame(tk.Frame):
 def get_entry_width(val) -> int:
     value = val.get()
     if isinstance(value, str):
-        return int((len(value) - value.count(' ') + 1))
+        return int((len(value) - value.count(' ') + 2))
     elif isinstance(value, int) or isinstance(value, float):
-        return int(value + 1)
+        return int(value/10 + 1)
     else:
         return 1
 
@@ -660,6 +660,7 @@ class MainApplication(tk.Frame):
         self.parent = parent
 
         scroll = Scrollable(self)
+        scroll.bind_all('<Configure>', scroll._configure_interior)
         scroll.grid(row=0, column=0, sticky='nsew')
 
         self.interior = scroll.interior
@@ -705,7 +706,9 @@ class MainApplication(tk.Frame):
 def create_ui():
     root = tk.Tk()
     root.title("Sequence Interpolator")
-    root.geometry("1200x700")
+    width = root.winfo_screenwidth()
+    height = root.winfo_screenheight()
+    root.geometry("{}x{}".format(width, height))
     root.state('zoomed')
     #root.eval('tk::PlaceWindow . center')
     global mainApp
