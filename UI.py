@@ -3,6 +3,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter.filedialog import askdirectory, askopenfilename, asksaveasfilename
 from Imports import *
+import math
 import pickle
 
 mainApp = None
@@ -12,9 +13,11 @@ enviro = Interpolatable("Environment", {'Location': ''})
 interpolatables = [subject, cam, enviro]  # Array of Interpolatable objects being used
 selected_interpolatable = interpolatables[0]  # The Interpolatable object that is selected
 selected_frame = 0  # The frame that is selected
-lastFrame = 10  # The last frame in the timeline
+lastFrame = 9  # The last frame in the timeline
 keyframeMultiplier = 1  # The number of renders/keyframe (static values)
 transitionMultiplier = 0  # The number of renders in-between keyframes (interlopating values)
+seed_offset = 0
+seeds = []
 positive_format = '--prompt {}'
 negative_format = '--negative_prompt {}'
 
@@ -253,10 +256,17 @@ def get_entry_width(val) -> int:
     if isinstance(value, str):
         return int((len(value) - value.count(' ') + 2))
     elif isinstance(value, int) or isinstance(value, float):
-        return int(value/10 + 1)
+        return get_digits(value) + 1
     else:
         return 1
 
+def get_digits(n) -> int:
+    if n > 0:
+        return int(math.log10(n)) + 1
+    elif n == 0:
+        return 1
+    else:
+        return int(math.log10(-n)) + 2  # +1 if you don't count the '-'
 
 def clear_transition_from_frame(key):
     if selected_frame in selected_interpolatable.transitions and key in selected_interpolatable.transitions[selected_frame]:
@@ -281,7 +291,7 @@ class Settings(tk.Frame):
         tk.Button(self, text='Load', command=lambda: load_sequence(), bg=grey, fg=white).grid(row=0, column=2, sticky='nsew')
         # Last Frame
         tk.Label(self, text='Last Frame: ', bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=1, column=0, sticky='nsew')
-        last_var = tk.IntVar(value=lastFrame)
+        last_var = tk.IntVar(value=lastFrame+1)
         last_value = self.register(Under_100)
         last_entry = tk.Entry(self, width=get_entry_width(last_var), background=white, foreground=black, highlightbackground=navy, highlightthickness=4, textvariable=last_var,
                                 validate="key", validatecommand=(last_value, '%d'))
@@ -350,7 +360,11 @@ def generate():
                     line = line + ' '
                 string = ', '.join(negatives)
                 line = line + negative_format.format(string)
-            line = line + "\n"
+            seed = -1
+            if len(seeds) > frame:
+                seed = seeds[frame]
+            seedText = ' --seed {}'.format(seed)
+            line = line + seedText + "\n"
             all_text = all_text + line
 
         # for each additional output from the transition multiplier
@@ -359,9 +373,10 @@ def generate():
                 positives = []
                 negatives = []
                 line = ''
+                completion = (kf+1)/(transitionMultiplier+1)
                 for interp in interpolatables:
                     # Get value at frame
-                    interp_positives, interp_negatives = interp.get_interped_str(frame, lastFrame, (kf+1)/(transitionMultiplier+1))
+                    interp_positives, interp_negatives = interp.get_interped_str(frame, lastFrame, completion)
                     if interp_positives is not None and interp_positives != ', ':
                         positives.append(interp_positives)
                     if interp_negatives is not None and interp_negatives != ', ':
@@ -374,7 +389,13 @@ def generate():
                         line = line + ' '
                     string = ', '.join(negatives)
                     line = line + negative_format.format(string)
-                line = line + "\n"
+                seed = -1
+                if completion > 0.5 and len(seeds) > frame + 1:
+                    seed = seeds[frame + 1]
+                elif completion < 0.5 and len(seeds) > frame:
+                    seed = seeds[frame]
+                seedText = '--seed {}'.format(seed)
+                line = line + seedText + "\n"
                 all_text = all_text + line
     location = asksaveasfilename(defaultextension='.txt')
     try:
@@ -386,7 +407,7 @@ def generate():
 
 
 def save_sequence():
-    sequence = [interpolatables, lastFrame, keyframeMultiplier, transitionMultiplier]
+    sequence = [interpolatables, lastFrame, keyframeMultiplier, transitionMultiplier, seed_offset, seeds]
     location = asksaveasfilename(initialfile='Sequence')
     try:
         file = open(location, 'wb')
@@ -408,12 +429,16 @@ def load_sequence():
         global transitionMultiplier
         global selected_interpolatable
         global selected_frame
+        global seed_offset
+        global seeds
         interpolatables = sequence[0]
         lastFrame = sequence[1]
         keyframeMultiplier = sequence[2]
         transitionMultiplier = sequence[3]
         selected_interpolatable = interpolatables[0]
         selected_frame = 0
+        seed_offset = sequence[4]
+        seeds = sequence[5]
         mainApp.reload_all()
         mainApp.reload_settings()
     except:
@@ -423,7 +448,7 @@ def load_sequence():
 def apply_last_frame(var):
     global lastFrame
     try:
-        lastFrame = int(var.get())
+        lastFrame = int(var.get()- 1)
         mainApp.reload_all()
         mainApp.reload_settings()
     except:
@@ -480,6 +505,8 @@ class Timeline(tk.Frame):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.grid(row=1, column=0, sticky="nsew", columnspan=3, padx=2, pady=2)
+        self.seed_offset_var = None
+        self.seed_vars = []
 
         self.frame = None
         self.update_timeline()
@@ -492,28 +519,75 @@ class Timeline(tk.Frame):
         self.frame.grid(row=0, column=0, sticky='nsew')
         self.frame = self.frame.interior
         # New frame
-        new_frame = tk.Frame(self.frame, bg=navy)
-        new_frame.grid(row=0, column=0)
+        new_frame = tk.Frame(self.frame)
+        new_frame.grid(row=0, column=0, rowspan=2)
         # New Name
         name_var = tk.StringVar(value='Subject Name')
         name_entry = tk.Entry(new_frame, width=get_entry_width(name_var), background=white, foreground=black, highlightbackground=navy, highlightthickness=4,
                                 textvariable=name_var)
-        name_entry.grid(row=0, column=0, sticky='nsew')
+        name_entry.grid(row=0, column=0, columnspan=2, sticky='nsew')
         # New Button
-        tk.Button(new_frame, text='Add Subject', command=lambda:new_interpolatable(name_var), bg=grey, fg=white).grid(row=0, column=1)
+        tk.Button(new_frame, text='Add Subject', command=lambda:new_interpolatable(name_var), bg=grey, fg=white).grid(row=0, column=2, sticky='nsew')
         # Top section
         for frame in range(0, lastFrame + 1):
-            tk.Label(self.frame, text=str(frame), bg=grey, fg=white, highlightbackground=navy, highlightthickness=1).grid(row=0, column=frame + 1)
+            tk.Label(self.frame, text=str(frame + 1), bg=grey, fg=white, highlightbackground=navy, highlightthickness=1).grid(row=0, column=frame + 1)
+        # Seed section
+        tk.Button(new_frame, text='Apply Seeds', command=lambda: self.apply_seeds(), bg=grey, fg=white).grid(
+            row=1, column=0, sticky='nsew')
+        tk.Label(new_frame, text='Seed Offset:', bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=1, column=1, sticky='nsew')
+        self.seed_offset_var = tk.IntVar(value=seed_offset)
+        seed_offset_entry = tk.Entry(new_frame, width=get_entry_width(self.seed_offset_var), background=white, foreground=black,
+                              highlightbackground=navy, highlightthickness=4,
+                              textvariable=self.seed_offset_var)
+        seed_offset_entry.grid(row=1, column=2, sticky='nsew')
+        for frame in range(0, lastFrame + 1):
+            val = -1
+            try:
+                val = seeds[frame]
+            except:
+                pass
+            if val != -1:
+                val = val-seed_offset
+            seed_var = tk.IntVar(value=val)
+            self.seed_vars.append(seed_var)
+            seed_entry = tk.Entry(self.frame, width=get_entry_width(seed_var), background=white, foreground=black,
+                                  highlightbackground=navy, highlightthickness=4,
+                                  textvariable=seed_var)
+            seed_entry.grid(row=1, column=frame + 1, sticky='nsew')
         # Grid section
         interp_count = 0
         for interp in interpolatables:
-            InterpolatableFrame(self.frame, interp, bg=navy).grid(row=interp_count + 1, column=0, sticky='nsew')
+            InterpolatableFrame(self.frame, interp, bg=navy).grid(row=interp_count + 2, column=0, sticky='nsew')
 
             for frame in range(0, lastFrame + 1):
 
-                TimelineButton(self.frame, interp, frame).grid(row=interp_count + 1, column=frame + 1)
+                TimelineButton(self.frame, interp, frame).grid(row=interp_count + 2, column=frame + 1)
 
             interp_count += 1
+
+
+    def apply_seeds(self):
+        global seed_offset
+        try:
+            seed_offset = self.seed_offset_var.get()
+        except:
+            pass
+        global seeds
+        counter = 0
+        for seed_var in self.seed_vars:
+            val = -1
+            try:
+                val = seed_var.get()
+            except:
+                pass
+            if val != -1:
+                val = val + seed_offset
+            if len(seeds) <= counter:
+                seeds.append(val)
+            else:
+                seeds[counter] = val
+            counter = counter + 1
+        mainApp.reload_all()
 
 
 def TimelineSelect(interp, frame):
@@ -641,7 +715,7 @@ class Scrollable(tk.Frame):
 class TimelineButton(tk.Button):
     def __init__(self, parent, interp, frame, *args, **kwargs):
         color = get_time_color(interp, frame, True, white, blue, orange, black, lightGrey)
-        tk.Button.__init__(self, parent, text='   ', bg=color, command=lambda: TimelineSelect(interp, frame), *args, **kwargs)
+        tk.Button.__init__(self, parent, text='     ', bg=color, command=lambda: TimelineSelect(interp, frame), *args, **kwargs)
 
 class InterpolatableFrame(tk.Frame):
     def __init__(self, parent, interp, *args, **kwargs):
