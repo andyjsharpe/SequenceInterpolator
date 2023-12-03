@@ -287,7 +287,7 @@ class Settings(tk.Frame):
         self.grid(row=0, column=2, sticky="nsew", padx=2, pady=2)
         # Top Buttons
         tk.Button(self,text='Generate', command=lambda: generate(), bg=grey, fg=white).grid(row=0, column=0, sticky='nsew')
-        tk.Button(self, text='Save', command=lambda: save_sequence(), bg=grey, fg=white).grid(row=0, column=1, sticky='nsew')
+        tk.Button(self, text='Save As', command=lambda: save_sequence(), bg=grey, fg=white).grid(row=0, column=1, sticky='nsew')
         tk.Button(self, text='Load', command=lambda: load_sequence(), bg=grey, fg=white).grid(row=0, column=2, sticky='nsew')
         # Last Frame
         tk.Label(self, text='Last Frame: ', bg=grey, fg=white, highlightbackground=navy, highlightthickness=4).grid(row=1, column=0, sticky='nsew')
@@ -323,15 +323,19 @@ def reset_all():
     global transitionMultiplier
     global selected_interpolatable
     global selected_frame
+    global seed_offset
+    global seeds
     subject = Interpolatable("Subject", {'Example category': 'Example Value'})
     cam = Interpolatable("Camera", {'size': '', 'view': ''})
     enviro = Interpolatable("Environment", {'Location': ''})
     interpolatables = [subject, cam, enviro]  # Array of Interpolatable objects being used
     selected_interpolatable = interpolatables[0]  # The Interpolatable object that is selected
     selected_frame = 0  # The frame that is selected
-    lastFrame = 10  # The last frame in the timeline
+    lastFrame = 9  # The last frame in the timeline
     keyframeMultiplier = 1  # The number of renders/keyframe (static values)
     transitionMultiplier = 0  # The number of renders in-between keyframes (interlopating values)
+    seed_offset = 0
+    seeds = []
     mainApp.reload_all()
     mainApp.reload_settings()
 
