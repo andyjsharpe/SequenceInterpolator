@@ -4,6 +4,8 @@ import pickle
 import tkinter as tk
 from tkinter.filedialog import askdirectory, askopenfilename, asksaveasfilename
 
+scaleFormat = '({}:{})'
+mixFormat = '(({}) AND ({}))'
 
 # This is intended to be extended by other classes with their own default dictionary values and/or other stuff
 class Interpolatable:
@@ -119,16 +121,20 @@ class Interpolatable:
     def get_frame_str(self, frame_number: int, last_frame: int):
         if not self.get_on(frame_number):
             return None, None
-        positives = []
-        negatives = []
+        pre_positives = []
+        post_positives = []
+        const_positives = []
+        pre_negatives = []
+        post_negatives = []
+        const_negatives = []
         for key in self.data:
-            value = None
+            pre_value = post_value = None
             # See if there is a keyframe on this frame
             if self.get_key_exists(frame_number, key):
                 # if so use the keyframe value
-                value = self.get_value_on_frame(frame_number, key)
+                pre_value = self.get_value_on_frame(frame_number, key)
             elif frame_number == 0:
-                value = self.data[key]
+                pre_value = self.data[key]
             else:
                 # if not, find the surrounding keyframes then interpolate
                 # there will always be a before value
@@ -138,32 +144,60 @@ class Interpolatable:
                 if after_value is not None:
                     # interpolate between values
                     completion = self.map_range(frame_number, before_frame, after_frame, 0, 1)
-                    value = self.mix_values(before_value, after_value, completion)
+                    pre_value, post_value = self.mix_values(before_value, after_value, completion)
                 else:
                     # set value to before
-                    value = before_value
-            if value is None or len(value) == 0:
-                continue
+                    pre_value = before_value
             if key.startswith('(Negative)'):
-                negatives.append(value)
+                if pre_value == post_value:
+                    if pre_value is not None and len(pre_value) > 0:
+                        const_negatives.append(pre_value)
+                else:
+                    if pre_value is not None and len(pre_value) > 0:
+                        pre_negatives.append(pre_value)
+                    if post_value is not None and len(post_value) > 0:
+                        post_negatives.append(post_value)
             else:
-                positives.append(value)
-        positive_prompt = None
-        if len(positives) > 0:
-            positive_prompt = '(' + ', '.join(positives) + ')'
-        negative_prompt = None
-        if len(negatives) > 0:
-            negative_prompt = '(' + ', '.join(negatives) + ')'
-        return positive_prompt, negative_prompt
+                if pre_value == post_value:
+                    if pre_value is not None and len(pre_value) > 0:
+                        const_positives.append(pre_value)
+                else:
+                    if pre_value is not None and len(pre_value) > 0:
+                        pre_positives.append(pre_value)
+                    if post_value is not None and len(post_value) > 0:
+                        post_positives.append(post_value)
+        pp_string = ', '.join(pre_positives)
+        if pp_string is None or pp_string == ', ':
+            pp_string = None
+        po_string = ', '.join(post_positives)
+        if po_string is None or po_string == ', ':
+            po_string = None
+        cp_string = ', '.join(const_positives)
+        if cp_string is None or cp_string == ', ':
+            cp_string = None
+        np_string = ', '.join(pre_negatives)
+        if np_string is None or np_string == ', ':
+            np_string = None
+        no_string = ', '.join(post_negatives)
+        if no_string is None or no_string == ', ':
+            no_string = None
+        cn_string = ', '.join(const_negatives)
+        if cn_string is None or cn_string == ', ':
+            cn_string = None
+        return pp_string, po_string, cp_string, np_string, no_string, cn_string
 
     # Use if between transition point or not on a keyframe
     def get_interped_str(self, frame_number: int, last_frame: int, extra_completion: float):
         if not self.get_on(frame_number):
             return None, None
-        positives = []
-        negatives = []
+        pre_positives = []
+        post_positives = []
+        const_positives = []
+        pre_negatives = []
+        post_negatives = []
+        const_negatives = []
         for key in self.data:
-            value = None
+            pre_value = post_value = None
             # find the surrounding keyframes then interpolate
             # there will always be a before value
             before_value, before_frame = self.get_previous_transition(frame_number, key)
@@ -172,40 +206,102 @@ class Interpolatable:
             if after_value is not None:
                 # interpolate between values
                 completion = self.map_range(frame_number + extra_completion, before_frame, after_frame, 0, 1)
-                value = self.mix_values(before_value, after_value, completion)
+                pre_value, post_value = self.mix_values(before_value, after_value, completion)
             else:
                 # set value to before
-                value = before_value
-            if value is None or len(value) == 0:
-                continue
+                pre_value = post_value = before_value
             if key.startswith('(Negative)'):
-                negatives.append(value)
+                if pre_value == post_value:
+                    if pre_value is not None and len(pre_value) > 0:
+                        const_negatives.append(pre_value)
+                else:
+                    if pre_value is not None and len(pre_value) > 0:
+                        pre_negatives.append(pre_value)
+                    if post_value is not None and len(post_value) > 0:
+                        post_negatives.append(post_value)
             else:
-                positives.append(value)
-        positive_prompt = None
-        if len(positives) > 0:
-            positive_prompt = '(' + ', '.join(positives) + ')'
-        negative_prompt = None
-        if len(negatives) > 0:
-            negative_prompt = '(' + ', '.join(negatives) + ')'
-        return positive_prompt, negative_prompt
+                if pre_value == post_value:
+                    if pre_value is not None and len(pre_value) > 0:
+                        const_positives.append(pre_value)
+                else:
+                    if pre_value is not None and len(pre_value) > 0:
+                        pre_positives.append(pre_value)
+                    if post_value is not None and len(post_value) > 0:
+                        post_positives.append(post_value)
+        pp_string = ', '.join(pre_positives)
+        if pp_string is None or pp_string == ', ':
+            pp_string = None
+        po_string = ', '.join(post_positives)
+        if po_string is None or po_string == ', ':
+            po_string = None
+        cp_string = ', '.join(const_positives)
+        if cp_string is None or cp_string == ', ':
+            cp_string = None
+        np_string = ', '.join(pre_negatives)
+        if np_string is None or np_string == ', ':
+            np_string = None
+        no_string = ', '.join(post_negatives)
+        if no_string is None or no_string == ', ':
+            no_string = None
+        cn_string = ', '.join(const_negatives)
+        if cn_string is None or cn_string == ', ':
+            cn_string = None
+        return pp_string, po_string, cp_string, np_string, no_string, cn_string
 
 
     def map_range(self, value, low1, high1, low2, high2):
         return low2 + (value - low1) * (high2 - low2) / (high1 - low1)
 
+    # Return the prompt for a set of pre and post values
+    def mix_with_and(self, pre, post, const):
+        pre_string = None
+        if pre is not None and len(pre) > 0:
+            pre_string = ', '.join(filter(None, pre))
+            if len(pre_string) < 1:
+                pre_string = None
+        post_string = None
+        if post is not None and len(post) > 0:
+            post_string = ', '.join(filter(None, post))
+            if len(post_string) < 1:
+                post_string = None
+        const_string = None
+        if const is not None and len(const) > 0:
+            const_string = ', '.join(filter(None, const))
+            if len(const_string) < 1:
+                const_string = None
+        line = None
+        if pre_string is not None:
+            if post_string is not None:
+                line = mixFormat.format(pre_string, post_string)
+            else:
+                line = pre_string
+        elif post_string is not None:
+            line = post_string
+        if const_string is not None:
+            if line is None:
+                return const_string
+            else:
+                return line + ', ' + const_string
+        else:
+            return line
+
+    # Return the scaled before and after values
     def mix_values(self, value1, value2, completion):
         rounded = round(completion*100)/100
         inverse_rounded = round((1 - completion) * 100) / 100
         if value1 == value2 or rounded == 0:
-            return value1
+            return value1, value1
         elif rounded == 1:
-            return value2
+            return value2, value2
         if value1 is None or value1 == '':
-            return '({}:{})'.format(value2, rounded)
+            scaled2 = scaleFormat.format(value2, rounded)
+            return None, scaled2
         if value2 is None or value2 == '':
-            return '({}:{})'.format(value1, inverse_rounded)
-        return '{{({}:{}) | ({}:{})}}'.format(value1, inverse_rounded, value2, rounded)
+            scaled1 = scaleFormat.format(value1, inverse_rounded)
+            return scaled1, None
+        scaled1 = scaleFormat.format(value1, inverse_rounded)
+        scaled2 = scaleFormat.format(value2, rounded)
+        return scaled1, scaled2
 
     def get_next_transition(self, frame_number: int, last_frame: int, key):
         for frame in range(frame_number + 1, last_frame + 1):

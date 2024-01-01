@@ -346,24 +346,36 @@ def generate():
     for frame in range(0, lastFrame + 1):
         # for each additional output from the frame multiplier
         for kf in range(0, keyframeMultiplier):
-            positives = []
-            negatives = []
+            pre_positives = []
+            post_positives = []
+            const_positives = []
+            pre_negatives = []
+            post_negatives = []
+            const_negatives = []
             line = ''
             for interp in interpolatables:
                 # Get value at frame
-                interp_positives, interp_negatives = interp.get_frame_str(frame, lastFrame)
-                if interp_positives is not None and interp_positives != ', ':
-                    positives.append(interp_positives)
-                if interp_negatives is not None and interp_negatives != ', ':
-                    negatives.append(interp_negatives)
-            if len(positives) > 0:
-                string = ', '.join(positives)
-                line = positive_format.format(string)
-            if len(negatives) > 0:
-                if len(positives) > 0:
+                interp_pre_positives, interp_post_positives, interp_const_positives, interp_pre_negatives, interp_post_negatives, interp_const_negatives = interp.get_frame_str(frame, lastFrame)
+                if interp_pre_positives is not None and interp_pre_positives != ', ':
+                    pre_positives.append(interp_pre_positives)
+                if interp_post_positives is not None and interp_post_positives != ', ':
+                    post_positives.append(interp_post_positives)
+                if interp_const_positives is not None and interp_const_positives != ', ':
+                    const_positives.append(interp_const_positives)
+                if interp_pre_negatives is not None and interp_pre_negatives != ', ':
+                    pre_negatives.append(interp_pre_negatives)
+                if interp_post_negatives is not None and interp_post_negatives != ', ':
+                    post_negatives.append(interp_post_negatives)
+                if interp_const_negatives is not None and interp_const_negatives != ', ':
+                    const_negatives.append(interp_const_negatives)
+            positives = interpolatables[0].mix_with_and(pre_positives, post_positives, const_positives)
+            if positives is not None and len(positives) > 0:
+                line = positive_format.format(positives)
+            negatives = interpolatables[0].mix_with_and(pre_negatives, post_negatives, const_negatives)
+            if negatives is not None and len(negatives) > 0:
+                if positives is not None and len(positives) > 0:
                     line = line + ' '
-                string = ', '.join(negatives)
-                line = line + negative_format.format(string)
+                line = line + negative_format.format(negatives)
             seed = -1
             if len(seeds) > frame:
                 seed = seeds[frame]
@@ -374,31 +386,43 @@ def generate():
         # for each additional output from the transition multiplier
         if frame < lastFrame:
             for kf in range(0, transitionMultiplier):
-                positives = []
-                negatives = []
+                pre_positives = []
+                post_positives = []
+                const_positives = []
+                pre_negatives = []
+                post_negatives = []
+                const_negatives = []
                 line = ''
                 completion = (kf+1)/(transitionMultiplier+1)
                 for interp in interpolatables:
                     # Get value at frame
-                    interp_positives, interp_negatives = interp.get_interped_str(frame, lastFrame, completion)
-                    if interp_positives is not None and interp_positives != ', ':
-                        positives.append(interp_positives)
-                    if interp_negatives is not None and interp_negatives != ', ':
-                        negatives.append(interp_negatives)
-                if len(positives) > 0:
-                    string = ', '.join(positives)
-                    line = positive_format.format(string)
-                if len(negatives) > 0:
-                    if len(positives) > 0:
+                    interp_pre_positives, interp_post_positives, interp_const_positives, interp_pre_negatives, interp_post_negatives, interp_const_negatives = interp.get_interped_str(frame, lastFrame, completion)
+                    if interp_pre_positives is not None and interp_pre_positives != ', ':
+                        pre_positives.append(interp_pre_positives)
+                    if interp_post_positives is not None and interp_post_positives != ', ':
+                        post_positives.append(interp_post_positives)
+                    if interp_const_positives is not None and interp_const_positives != ', ':
+                        const_positives.append(interp_const_positives)
+                    if interp_pre_negatives is not None and interp_pre_negatives != ', ':
+                        pre_negatives.append(interp_pre_negatives)
+                    if interp_post_negatives is not None and interp_post_negatives != ', ':
+                        post_negatives.append(interp_post_negatives)
+                    if interp_const_negatives is not None and interp_const_negatives != ', ':
+                        const_negatives.append(interp_const_negatives)
+                positives = interpolatables[0].mix_with_and(pre_positives, post_positives, const_positives)
+                if positives is not None and len(positives) > 0:
+                    line = positive_format.format(positives)
+                negatives = interpolatables[0].mix_with_and(pre_negatives, post_negatives, const_negatives)
+                if negatives is not None and len(negatives) > 0:
+                    if positives is not None and len(positives) > 0:
                         line = line + ' '
-                    string = ', '.join(negatives)
-                    line = line + negative_format.format(string)
+                    line = line + negative_format.format(negatives)
                 seed = -1
                 if completion > 0.5 and len(seeds) > frame + 1:
                     seed = seeds[frame + 1]
-                elif completion < 0.5 and len(seeds) > frame:
+                elif completion <= 0.5 and len(seeds) > frame:
                     seed = seeds[frame]
-                seedText = '--seed {}'.format(seed)
+                seedText = ' --seed {}'.format(seed)
                 line = line + seedText + "\n"
                 all_text = all_text + line
     location = asksaveasfilename(defaultextension='.txt')
